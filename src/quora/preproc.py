@@ -97,6 +97,9 @@ def project_sentence(sent,space,lower=True):
 	return proj
 
 def project_data(data,space):
+	"""
+	project data in word2vec given space
+	"""
 	vsize = next(iter(space.values())).shape[0]
 
 	# Project training data
@@ -107,16 +110,42 @@ def project_data(data,space):
 	
 	return projections
 
-def save_project(projections,index,filename):
+def save_projections(index,projections,target,filename):
+	"""
+	Save projected data in a text file (@TODO should do binary)
+	"""
 	assert projections.shape[0] == index.shape[0]
 	with open(filename,"wt") as f:
 		f.write("{} {}".format(projections.shape[0],projections.shape[1]))
-		for i,p_r in zip(index,projections):
-			f.write("{},".format(i))
+		for i,p_r,t in zip(index,projections,target):
+			f.write("\n")
+			f.write("{}".format(i))
 			for p_c in p_r:
-				f.write("{} ".format(float(p_c)))
+				f.write(" {}".format(float(p_c)))
+			f.write(" {}".format(t))
 
-			
+def load_projections(filename):
+	projections = None
+	index = None
+	targets = None
+	with open(filename,"rt") as f:
+		x,y = f.readline().split()
+		x = int(x)
+		y = int(y)
+		projections = np.zeros((x,y))
+		index = []
+		targets = np.zeros(x)
+		i = 0
+		for line in f:
+			words = line.split()
+			index.append(words[0])
+			projections[i] = np.array(words[1:y+1],dtype=float)
+			targets[i] = words[y+1]
+			i+=1
+		assert len(index) == x
+		assert projections.shape == (x,y)
+	return (index,projections,targets)
+		
 
 	# Save in a complete dataframe
 	# train_complete = data.copy(deep=True)
